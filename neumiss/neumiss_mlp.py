@@ -9,7 +9,7 @@ from sklearn.base import BaseEstimator
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from pytorchtools import EarlyStopping
+from .pytorchtools import EarlyStopping
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 from .neumiss_layer import NeuMiss
