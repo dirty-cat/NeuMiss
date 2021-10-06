@@ -1,6 +1,7 @@
 import torch
 from typing import Tuple
 from pathlib import Path
+from multiprocessing import freeze_support
 
 from neumiss import NeuMiss
 import pytorch_lightning as pl
@@ -66,19 +67,22 @@ class NeuMissNetwork(pl.LightningModule):
         self.log('val_loss', loss)
 
 
-features_count = mnar_X.shape[0] * mnar_X.shape[1]
-model = NeuMissNetwork()
+if __name__ == "__main__":
+    freeze_support()
 
-test_amount = .25
-train_size = round(mnar_X.size()[0] * (1 - test_amount))
-test_size = round(mnar_X.size()[0] * test_amount)
+    features_count = mnar_X.shape[0] * mnar_X.shape[1]
+    model = NeuMissNetwork()
 
-mnar_train, mnar_val = random_split(TensorDataset(mnar_X), [train_size, test_size])
+    test_amount = .25
+    train_size = round(mnar_X.size()[0] * (1 - test_amount))
+    test_size = round(mnar_X.size()[0] * test_amount)
 
-# Define loaders
-train_loader = DataLoader(mnar_train, batch_size=10)
-val_loader = DataLoader(mnar_val, batch_size=10)
+    mnar_train, mnar_val = random_split(TensorDataset(mnar_X), [train_size, test_size])
 
-# Training
-trainer = pl.Trainer(num_nodes=8, limit_train_batches=0.5)
-trainer.fit(model, train_loader, val_loader)
+    # Define loaders
+    train_loader = DataLoader(mnar_train, batch_size=10)
+    val_loader = DataLoader(mnar_val, batch_size=10)
+
+    # Training
+    trainer = pl.Trainer(gpus=4, num_nodes=8, precision=16, limit_train_batches=0.5)
+    trainer.fit(model, train_loader, val_loader)
